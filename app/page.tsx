@@ -1,7 +1,15 @@
+import { Metadata } from 'next'
 import HeroCarousel from '@/components/HeroCarousel'
 import ProductGrid from '@/components/ProductGrid'
 import CategoryShowcase from '@/components/CategoryShowcase'
 import { getFeaturedBanners, getFeaturedProducts, getNewArrivals, getCategories } from '@/lib/cosmic'
+import { generateSEO } from '@/lib/seo'
+
+export const metadata: Metadata = generateSEO({
+  title: 'Nike Clone | Premium Athletic Footwear & Apparel',
+  description: 'Shop the latest collection of premium athletic footwear and apparel. Find your perfect gear with Nike Clone - Just Do It.',
+  path: '/',
+})
 
 export default async function HomePage() {
   const [banners, featuredProducts, newArrivals, categories] = await Promise.all([

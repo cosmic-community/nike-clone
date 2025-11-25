@@ -1,7 +1,9 @@
 // app/categories/[slug]/page.tsx
+import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import ProductGrid from '@/components/ProductGrid'
 import { getCategoryBySlug, getProductsByCategory, getCategories } from '@/lib/cosmic'
+import { generateSEO, generateCategoryJsonLd, generateBreadcrumbJsonLd } from '@/lib/seo'
 
 export async function generateStaticParams() {
   const categories = await getCategories()
@@ -10,7 +12,7 @@ export async function generateStaticParams() {
   }))
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params
   const category = await getCategoryBySlug(slug)
   
@@ -18,10 +20,27 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     return { title: 'Category Not Found' }
   }
 
-  return {
+  const products = await getProductsByCategory(category.id)
+
+  const breadcrumbItems = [
+    { name: 'Home', url: '/' },
+    { name: 'Categories', url: '/products' },
+    { name: category.metadata.name, url: `/categories/${category.slug}` },
+  ]
+
+  const categoryJsonLd = generateCategoryJsonLd(category, products.length)
+  const breadcrumbJsonLd = generateBreadcrumbJsonLd(breadcrumbItems)
+
+  return generateSEO({
     title: `${category.metadata.name} | Nike Clone`,
-    description: category.metadata.description || `Shop ${category.metadata.name} collection`,
-  }
+    description: category.metadata.description || `Shop ${category.metadata.name} collection - Premium athletic footwear and apparel.`,
+    path: `/categories/${category.slug}`,
+    image: category.metadata.image ? `${category.metadata.image.imgix_url}?w=1200&h=630&fit=crop&auto=format,compress` : undefined,
+    jsonLd: {
+      ...categoryJsonLd,
+      breadcrumb: breadcrumbJsonLd,
+    },
+  })
 }
 
 export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {

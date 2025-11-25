@@ -1,11 +1,14 @@
+import { Metadata } from 'next'
 import ProductGrid from '@/components/ProductGrid'
 import ProductFilters from '@/components/ProductFilters'
 import { getProducts, getCategories } from '@/lib/cosmic'
+import { generateSEO } from '@/lib/seo'
 
-export const metadata = {
+export const metadata: Metadata = generateSEO({
   title: 'All Products | Nike Clone',
-  description: 'Browse our complete collection of athletic footwear.',
-}
+  description: 'Browse our complete collection of athletic footwear. Find the perfect shoes for your sport and style.',
+  path: '/products',
+})
 
 export default async function ProductsPage({
   searchParams,

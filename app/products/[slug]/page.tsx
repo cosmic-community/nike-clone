@@ -1,10 +1,12 @@
 // app/products/[slug]/page.tsx
+import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import ProductGallery from '@/components/ProductGallery'
 import SizeSelector from '@/components/SizeSelector'
 import ColorSelector from '@/components/ColorSelector'
 import { getProductBySlug, getProducts } from '@/lib/cosmic'
+import { generateSEO, generateProductJsonLd, generateBreadcrumbJsonLd } from '@/lib/seo'
 
 export async function generateStaticParams() {
   const products = await getProducts()
@@ -13,7 +15,7 @@ export async function generateStaticParams() {
   }))
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params
   const product = await getProductBySlug(slug)
   
@@ -21,10 +23,40 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     return { title: 'Product Not Found' }
   }
 
-  return {
-    title: `${product.metadata.name} | Nike Clone`,
-    description: product.metadata.description || `Shop ${product.metadata.name}`,
+  const hasDiscount = product.metadata.sale_price && product.metadata.sale_price < product.metadata.price
+  const price = hasDiscount ? product.metadata.sale_price : product.metadata.price
+
+  const breadcrumbItems = [
+    { name: 'Home', url: '/' },
+    { name: 'Products', url: '/products' },
+  ]
+  
+  if (product.metadata.category) {
+    breadcrumbItems.push({
+      name: product.metadata.category.metadata?.name || product.metadata.category.title,
+      url: `/categories/${product.metadata.category.slug}`,
+    })
   }
+  
+  breadcrumbItems.push({
+    name: product.metadata.name,
+    url: `/products/${product.slug}`,
+  })
+
+  const productJsonLd = generateProductJsonLd(product)
+  const breadcrumbJsonLd = generateBreadcrumbJsonLd(breadcrumbItems)
+
+  return generateSEO({
+    title: `${product.metadata.name} - $${price} | Nike Clone`,
+    description: product.metadata.description || product.metadata.subtitle || `Shop ${product.metadata.name} - Premium athletic footwear.`,
+    path: `/products/${product.slug}`,
+    image: `${product.metadata.main_image.imgix_url}?w=1200&h=630&fit=crop&auto=format,compress`,
+    type: 'product',
+    jsonLd: {
+      ...productJsonLd,
+      breadcrumb: breadcrumbJsonLd,
+    },
+  })
 }
 
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
