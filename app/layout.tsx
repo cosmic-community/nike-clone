@@ -36,6 +36,13 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
         />
+        {/* Changed: Add emoji favicon (👟) as SVG data URL */}
+        <link
+          rel="icon"
+          href={
+            "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0%200%2064%2064'%3E%3Ctext y='.9em' font-size='64'%3E👟%3C/text%3E%3C/svg%3E"
+          }
+        />
       </head>
       <body className={inter.className}>
         <ScrollToTop />
