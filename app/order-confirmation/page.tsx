@@ -1,5 +1,5 @@
 import { Metadata } from 'next'
-import { Suspense } from 'react' // Changed: Added Suspense import
+import { Suspense } from 'react'
 import OrderConfirmationContent from '@/components/OrderConfirmationContent'
 import { generateSEO } from '@/lib/seo'
 
