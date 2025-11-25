@@ -41,12 +41,9 @@ export function addToCart(item: CartItem): Cart {
       i.color === item.color
   )
   
-  if (existingIndex > -1) {
-    // Changed: Add explicit undefined check before accessing array element
-    const existingItem = cart.items[existingIndex]
-    if (existingItem) {
-      existingItem.quantity += item.quantity
-    }
+  if (existingIndex > -1 && cart.items[existingIndex]) {
+    // Item exists, increment quantity
+    cart.items[existingIndex].quantity += item.quantity
   } else {
     // Add new item
     cart.items.push(item)
@@ -75,7 +72,6 @@ export function updateCartItemQuantity(
     if (quantity <= 0) {
       cart.items.splice(itemIndex, 1)
     } else {
-      // Changed: Add explicit undefined check before accessing array element
       const item = cart.items[itemIndex]
       if (item) {
         item.quantity = quantity
