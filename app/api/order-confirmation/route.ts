@@ -4,7 +4,7 @@ import { createOrder } from '@/lib/cosmic'
 import { OrderItem } from '@/types'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
-  apiVersion: '2023-10-16',
+  apiVersion: '2023-10-16', // Changed: Fixed API version to match TypeScript type definition
 })
 
 export async function GET(request: NextRequest) {
