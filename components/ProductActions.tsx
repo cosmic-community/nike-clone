@@ -38,7 +38,7 @@ export default function ProductActions({ product }: ProductActionsProps) {
       <AddToCartButton 
         product={product}
         selectedSize={selectedSize}
-        selectedColor={selectedColor || ''} // Changed: Use || instead of ?? for consistency
+        selectedColor={selectedColor || ''} // Changed: Ensure string type (never undefined)
       />
       
       <button className="w-full btn-secondary py-4 text-base mt-4">
