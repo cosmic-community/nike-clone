@@ -4,9 +4,9 @@ if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error('STRIPE_SECRET_KEY is not set')
 }
 
-// Changed: Updated to latest stable Stripe API version
+// Changed: Updated to correct Stripe API version format
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2024-12-18.acacia',
+  apiVersion: '2023-10-16',
   typescript: true,
 })
 
