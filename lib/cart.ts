@@ -42,8 +42,11 @@ export function addToCart(item: CartItem): Cart {
   )
   
   if (existingIndex > -1) {
-    // Update quantity
-    cart.items[existingIndex].quantity += item.quantity
+    // Update quantity - add explicit check for item existence
+    const existingItem = cart.items[existingIndex]
+    if (existingItem) {
+      existingItem.quantity += item.quantity
+    }
   } else {
     // Add new item
     cart.items.push(item)
@@ -72,7 +75,11 @@ export function updateCartItemQuantity(
     if (quantity <= 0) {
       cart.items.splice(itemIndex, 1)
     } else {
-      cart.items[itemIndex].quantity = quantity
+      // Add explicit check for item existence
+      const item = cart.items[itemIndex]
+      if (item) {
+        item.quantity = quantity
+      }
     }
     saveCart(cart)
   }

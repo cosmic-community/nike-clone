@@ -207,7 +207,8 @@ export async function getOrderByStripeSession(sessionId: string): Promise<Order 
       .props(['id', 'title', 'slug', 'metadata', 'created_at'])
       .depth(1)
     const orders = response.objects as Order[]
-    return orders.length > 0 ? orders[0] : null
+    // Changed: Explicit check for undefined to match Order | null return type
+    return orders.length > 0 && orders[0] ? orders[0] : null
   } catch (error) {
     if (hasStatus(error) && error.status === 404) {
       return null
