@@ -5,6 +5,7 @@ import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import CosmicBadge from '@/components/CosmicBadge'
 import ScrollToTop from '@/components/ScrollToTop'
+import { CartProvider } from '@/context/CartContext'
 import { generateSEO, generateWebsiteJsonLd, generateOrganizationJsonLd } from '@/lib/seo'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -36,7 +37,6 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
         />
-        {/* Changed: Add emoji favicon (👟) as SVG data URL */}
         <link
           rel="icon"
           href={
@@ -45,13 +45,15 @@ export default function RootLayout({
         />
       </head>
       <body className={inter.className}>
-        <ScrollToTop />
-        <Header />
-        <main className="min-h-screen">
-          {children}
-        </main>
-        <Footer />
-        <CosmicBadge bucketSlug={bucketSlug} />
+        <CartProvider>
+          <ScrollToTop />
+          <Header />
+          <main className="min-h-screen">
+            {children}
+          </main>
+          <Footer />
+          <CosmicBadge bucketSlug={bucketSlug} />
+        </CartProvider>
       </body>
     </html>
   )

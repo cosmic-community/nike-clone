@@ -1,5 +1,5 @@
 import { createBucketClient } from '@cosmicjs/sdk'
-import { FeaturedBanner, Product, Category } from '@/types'
+import { FeaturedBanner, Product, Category, Order, OrderItem } from '@/types'
 
 export const cosmic = createBucketClient({
   bucketSlug: process.env.COSMIC_BUCKET_SLUG as string,
@@ -130,4 +130,60 @@ export async function getProductsByCategory(categoryId: string): Promise<Product
     }
     throw new Error('Failed to fetch products by category')
   }
+}
+
+// Order functions
+export async function createOrder(orderData: {
+  customerEmail: string;
+  customerName: string;
+  shippingAddress: string;
+  items: OrderItem[];
+  subtotal: number;
+  shipping: number;
+  tax: number;
+  total: number;
+  stripePaymentIntentId: string;
+  stripeSessionId?: string;
+}): Promise<Order> {
+  const response = await cosmic.objects.insertOne({
+    title: `Order - ${orderData.customerEmail} - ${new Date().toISOString()}`,
+    type: 'orders',
+    metadata: {
+      customer_email: orderData.customerEmail,
+      customer_name: orderData.customerName,
+      shipping_address: orderData.shippingAddress,
+      items: orderData.items,
+      subtotal: orderData.subtotal,
+      shipping: orderData.shipping,
+      tax: orderData.tax,
+      total: orderData.total,
+      status: 'Pending',
+      stripe_payment_intent_id: orderData.stripePaymentIntentId,
+      stripe_session_id: orderData.stripeSessionId || '',
+    },
+  })
+  return response.object as Order
+}
+
+export async function getOrderBySessionId(sessionId: string): Promise<Order | null> {
+  try {
+    const response = await cosmic.objects
+      .findOne({ type: 'orders', 'metadata.stripe_session_id': sessionId })
+      .props(['id', 'title', 'slug', 'metadata'])
+      .depth(1)
+    return response.object as Order
+  } catch (error) {
+    if (hasStatus(error) && error.status === 404) {
+      return null
+    }
+    throw new Error('Failed to fetch order')
+  }
+}
+
+export async function updateOrderStatus(orderId: string, status: string): Promise<void> {
+  await cosmic.objects.updateOne(orderId, {
+    metadata: {
+      status,
+    },
+  })
 }
