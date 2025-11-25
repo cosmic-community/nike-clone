@@ -1,9 +1,11 @@
 import Link from 'next/link'
 import { getCategories } from '@/lib/cosmic'
+import { getSession } from '@/lib/auth'
 import SearchBar from './SearchBar'
 
 export default async function Header() {
   const categories = await getCategories()
+  const user = await getSession()
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-gray-200">
@@ -17,9 +19,19 @@ export default async function Header() {
             <span>|</span>
             <Link href="/products" className="hover:text-nike-gray">Help</Link>
             <span>|</span>
-            <Link href="/products" className="hover:text-nike-gray">Join Us</Link>
-            <span>|</span>
-            <Link href="/products" className="hover:text-nike-gray">Sign In</Link>
+            {user ? (
+              <>
+                <Link href="/profile" className="hover:text-nike-gray font-medium">
+                  {user.name}
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link href="/signup" className="hover:text-nike-gray">Join Us</Link>
+                <span>|</span>
+                <Link href="/login" className="hover:text-nike-gray">Sign In</Link>
+              </>
+            )}
           </div>
         </div>
       </div>

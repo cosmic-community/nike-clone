@@ -56,3 +56,43 @@ export interface Product extends CosmicObject {
     new_arrival?: boolean;
   };
 }
+
+// Authentication types
+export interface User extends CosmicObject {
+  type: 'users';
+  metadata: {
+    name: string;
+    email: string;
+    password_hash: string;
+    created_at?: string;
+  };
+}
+
+export interface Order extends CosmicObject {
+  type: 'orders';
+  metadata: {
+    user: User;
+    order_number: string;
+    items: OrderItem[];
+    total_amount: number;
+    status: string;
+    shipping_address: string;
+    created_at?: string;
+  };
+}
+
+export interface OrderItem {
+  product_id: string;
+  product_name: string;
+  product_image?: string;
+  quantity: number;
+  size?: string;
+  color?: string;
+  price: number;
+}
+
+export interface AuthUser {
+  id: string;
+  name: string;
+  email: string;
+}
