@@ -56,3 +56,63 @@ export interface Product extends CosmicObject {
     new_arrival?: boolean;
   };
 }
+
+// Cart Types
+export interface CartItem {
+  productId: string;
+  productSlug: string;
+  name: string;
+  subtitle?: string;
+  price: number;
+  salePrice?: number | null;
+  image: string;
+  size: string;
+  color: string;
+  quantity: number;
+}
+
+export interface Cart {
+  items: CartItem[];
+  updatedAt: string;
+}
+
+// Order Types
+export interface OrderItem {
+  product_id: string;
+  product_slug: string;
+  name: string;
+  price: number;
+  size: string;
+  color: string;
+  quantity: number;
+  image: string;
+}
+
+export interface Order extends CosmicObject {
+  type: 'orders';
+  metadata: {
+    customer_email: string;
+    customer_name: string;
+    shipping_address: string;
+    items: OrderItem[];
+    subtotal: number;
+    shipping: number;
+    tax: number;
+    total: number;
+    status: string;
+    stripe_payment_intent_id: string;
+    stripe_session_id?: string;
+  };
+}
+
+// Checkout Types
+export interface CheckoutFormData {
+  email: string;
+  firstName: string;
+  lastName: string;
+  address: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  country: string;
+}

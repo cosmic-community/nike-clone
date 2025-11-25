@@ -2,8 +2,7 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import ProductGallery from '@/components/ProductGallery'
-import SizeSelector from '@/components/SizeSelector'
-import ColorSelector from '@/components/ColorSelector'
+import ProductActions from '@/components/ProductActions'
 import { getProductBySlug, getProducts } from '@/lib/cosmic'
 
 export async function generateStaticParams() {
@@ -95,24 +94,10 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             )}
           </div>
 
-          {metadata.colors && metadata.colors.length > 0 && (
-            <ColorSelector colors={metadata.colors} />
-          )}
-
-          {metadata.available_sizes && metadata.available_sizes.length > 0 && (
-            <SizeSelector sizes={metadata.available_sizes} />
-          )}
-
-          <button className="w-full btn-primary py-4 text-base mb-4">
-            Add to Bag
-          </button>
-          
-          <button className="w-full btn-secondary py-4 text-base mb-8">
-            Favorite ♡
-          </button>
+          <ProductActions product={product} />
 
           {metadata.description && (
-            <div className="border-t border-gray-200 pt-8">
+            <div className="border-t border-gray-200 pt-8 mt-8">
               <h3 className="font-bold text-lg mb-4">Description</h3>
               <p className="text-nike-gray leading-relaxed">{metadata.description}</p>
             </div>
