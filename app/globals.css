@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    @apply antialiased text-nike-black;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-block bg-nike-black text-white px-8 py-3 rounded-full font-medium text-sm uppercase tracking-wider transition-all duration-200 hover:bg-gray-800;
+  }
+  
+  .btn-secondary {
+    @apply inline-block bg-white text-nike-black border border-nike-black px-8 py-3 rounded-full font-medium text-sm uppercase tracking-wider transition-all duration-200 hover:bg-nike-black hover:text-white;
+  }
+}
