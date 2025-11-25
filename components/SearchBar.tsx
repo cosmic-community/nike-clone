@@ -16,15 +16,22 @@ export default function SearchBar() {
   const [results, setResults] = useState<SearchResult | null>(null)
   const [isOpen, setIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [selectedIndex, setSelectedIndex] = useState(-1) // Changed: Added selected index for keyboard navigation
   const searchRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
+
+  // Changed: Calculate visible results count (max 5 products + optional "view all" link)
+  const visibleProducts = results?.products?.slice(0, 5) || []
+  const hasViewAllLink = results && results.total > 5
+  const totalNavigableItems = visibleProducts.length + (hasViewAllLink ? 1 : 0)
 
   // Debounced search function
   const searchProducts = useCallback(async (searchQuery: string) => {
     if (!searchQuery.trim()) {
       setResults(null)
       setIsOpen(false)
+      setSelectedIndex(-1) // Changed: Reset selection when clearing
       return
     }
 
@@ -34,6 +41,7 @@ export default function SearchBar() {
       const data = await response.json()
       setResults(data)
       setIsOpen(true)
+      setSelectedIndex(-1) // Changed: Reset selection on new search
     } catch (error) {
       console.error('Search error:', error)
       setResults(null)
@@ -56,6 +64,7 @@ export default function SearchBar() {
     function handleClickOutside(event: MouseEvent) {
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
         setIsOpen(false)
+        setSelectedIndex(-1) // Changed: Reset selection when closing
       }
     }
 
@@ -63,15 +72,65 @@ export default function SearchBar() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  // Handle keyboard navigation
+  // Changed: Enhanced keyboard navigation handler
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && query.trim()) {
-      setIsOpen(false)
-      router.push(`/search?q=${encodeURIComponent(query)}`)
+    if (!isOpen || !results || results.products.length === 0) {
+      // If dropdown is closed but user presses Enter, go to search page
+      if (e.key === 'Enter' && query.trim()) {
+        setIsOpen(false)
+        router.push(`/search?q=${encodeURIComponent(query)}`)
+      }
+      if (e.key === 'Escape') {
+        setIsOpen(false)
+        inputRef.current?.blur()
+      }
+      return
     }
-    if (e.key === 'Escape') {
-      setIsOpen(false)
-      inputRef.current?.blur()
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault() // Prevent cursor from moving in input
+        setSelectedIndex(prev => {
+          const nextIndex = prev + 1
+          return nextIndex >= totalNavigableItems ? 0 : nextIndex
+        })
+        break
+      
+      case 'ArrowUp':
+        e.preventDefault() // Prevent cursor from moving in input
+        setSelectedIndex(prev => {
+          const nextIndex = prev - 1
+          return nextIndex < 0 ? totalNavigableItems - 1 : nextIndex
+        })
+        break
+      
+      case 'Enter':
+        e.preventDefault()
+        if (selectedIndex === -1) {
+          // No item selected, go to search results page
+          setIsOpen(false)
+          router.push(`/search?q=${encodeURIComponent(query)}`)
+        } else if (selectedIndex < visibleProducts.length) {
+          // Product item selected
+          const selectedProduct = visibleProducts[selectedIndex]
+          if (selectedProduct) {
+            setIsOpen(false)
+            setQuery('')
+            router.push(`/products/${selectedProduct.slug}`)
+          }
+        } else if (hasViewAllLink) {
+          // "View all" link selected
+          setIsOpen(false)
+          setQuery('')
+          router.push(`/search?q=${encodeURIComponent(query)}`)
+        }
+        break
+      
+      case 'Escape':
+        setIsOpen(false)
+        setSelectedIndex(-1)
+        inputRef.current?.blur()
+        break
     }
   }
 
@@ -79,9 +138,15 @@ export default function SearchBar() {
     e.preventDefault()
     if (query.trim()) {
       setIsOpen(false)
+      setSelectedIndex(-1) // Changed: Reset selection on submit
       router.push(`/search?q=${encodeURIComponent(query)}`)
     }
   }
+
+  // Changed: Reset selection when results change
+  useEffect(() => {
+    setSelectedIndex(-1)
+  }, [results])
 
   return (
     <div ref={searchRef} className="relative">
@@ -96,6 +161,10 @@ export default function SearchBar() {
             onKeyDown={handleKeyDown}
             placeholder="Search"
             className="bg-nike-lightgray rounded-full pl-10 pr-4 py-2 text-sm w-40 focus:w-56 transition-all focus:outline-none focus:ring-2 focus:ring-nike-black"
+            role="combobox" // Changed: Added accessibility attributes
+            aria-expanded={isOpen}
+            aria-controls="search-results-dropdown"
+            aria-activedescendant={selectedIndex >= 0 ? `search-result-${selectedIndex}` : undefined}
           />
           <svg
             className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-nike-gray"
@@ -120,7 +189,11 @@ export default function SearchBar() {
 
       {/* Search Results Dropdown */}
       {isOpen && results && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-50 min-w-[320px]">
+        <div 
+          id="search-results-dropdown" // Changed: Added id for accessibility
+          role="listbox" // Changed: Added role for accessibility
+          className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-50 min-w-[320px]"
+        >
           {results.products.length > 0 ? (
             <>
               <div className="p-3 border-b border-gray-100">
@@ -129,15 +202,25 @@ export default function SearchBar() {
                 </p>
               </div>
               <ul className="max-h-[400px] overflow-y-auto">
-                {results.products.slice(0, 5).map((product) => (
-                  <li key={product.id}>
+                {visibleProducts.map((product, index) => (
+                  <li 
+                    key={product.id}
+                    id={`search-result-${index}`} // Changed: Added id for accessibility
+                    role="option" // Changed: Added role for accessibility
+                    aria-selected={selectedIndex === index} // Changed: Added aria-selected
+                  >
                     <Link
                       href={`/products/${product.slug}`}
                       onClick={() => {
                         setIsOpen(false)
                         setQuery('')
+                        setSelectedIndex(-1)
                       }}
-                      className="flex items-center gap-4 p-3 hover:bg-nike-lightgray transition-colors"
+                      className={`flex items-center gap-4 p-3 transition-colors ${
+                        selectedIndex === index 
+                          ? 'bg-nike-lightgray' // Changed: Highlight selected item
+                          : 'hover:bg-nike-lightgray'
+                      }`}
                     >
                       <div className="w-16 h-16 bg-nike-lightgray rounded-lg overflow-hidden flex-shrink-0">
                         <img
@@ -172,14 +255,22 @@ export default function SearchBar() {
                   </li>
                 ))}
               </ul>
-              {results.total > 5 && (
+              {hasViewAllLink && (
                 <Link
+                  id={`search-result-${visibleProducts.length}`} // Changed: Added id for accessibility
+                  role="option" // Changed: Added role for accessibility
+                  aria-selected={selectedIndex === visibleProducts.length} // Changed: Added aria-selected
                   href={`/search?q=${encodeURIComponent(query)}`}
                   onClick={() => {
                     setIsOpen(false)
                     setQuery('')
+                    setSelectedIndex(-1)
                   }}
-                  className="block p-3 text-center text-sm font-medium text-nike-black hover:bg-nike-lightgray transition-colors border-t border-gray-100"
+                  className={`block p-3 text-center text-sm font-medium text-nike-black transition-colors border-t border-gray-100 ${
+                    selectedIndex === visibleProducts.length 
+                      ? 'bg-nike-lightgray' // Changed: Highlight selected item
+                      : 'hover:bg-nike-lightgray'
+                  }`}
                 >
                   View all {results.total} results
                 </Link>

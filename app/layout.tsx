@@ -4,6 +4,7 @@ import './globals.css'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import CosmicBadge from '@/components/CosmicBadge'
+import ScrollToTop from '@/components/ScrollToTop'
 import { generateSEO, generateWebsiteJsonLd, generateOrganizationJsonLd } from '@/lib/seo'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -44,6 +45,7 @@ export default function RootLayout({
         />
       </head>
       <body className={inter.className}>
+        <ScrollToTop />
         <Header />
         <main className="min-h-screen">
           {children}
