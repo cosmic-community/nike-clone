@@ -10,7 +10,7 @@ export interface SEOProps {
   description: string
   path: string
   image?: string
-  type?: 'website' | 'article' | 'product'
+  type?: 'website' | 'article'
   jsonLd?: Record<string, any>
 }
 

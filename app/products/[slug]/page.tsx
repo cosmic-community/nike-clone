@@ -51,7 +51,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     description: product.metadata.description || product.metadata.subtitle || `Shop ${product.metadata.name} - Premium athletic footwear.`,
     path: `/products/${product.slug}`,
     image: `${product.metadata.main_image.imgix_url}?w=1200&h=630&fit=crop&auto=format,compress`,
-    type: 'product',
+    type: 'website',
     jsonLd: {
       ...productJsonLd,
       breadcrumb: breadcrumbJsonLd,
