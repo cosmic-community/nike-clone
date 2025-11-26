@@ -28,9 +28,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       openGraph: {
         title: product.title,
         description: product.metadata?.description,
-        images: product.metadata?.images?.[0]?.imgix_url ? [
+        images: product.metadata?.gallery?.[0]?.imgix_url ? [
           {
-            url: `${product.metadata.images[0].imgix_url}?w=1200&h=630&fit=crop&auto=format,compress`,
+            url: `${product.metadata.gallery[0].imgix_url}?w=1200&h=630&fit=crop&auto=format,compress`,
             width: 1200,
             height: 630,
           },
@@ -64,8 +64,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   const user = await getSession()
   const isFavorite = user?.favorite_products?.includes(product.id) || false
 
-  const mainImage = product.metadata?.images?.[0]
-  const gallery = product.metadata?.images
+  const gallery = product.metadata?.gallery
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -88,7 +87,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           <div className="flex items-start justify-between">
             <div>
               <h1 className="text-3xl font-bold mb-2">{product.title}</h1>
-              <p className="text-gray-600">{product.metadata?.category}</p>
+              <p className="text-gray-600">{product.metadata?.category?.title || product.metadata?.category?.metadata?.name}</p>
             </div>
             {/* Changed: Pass initialIsFavorite prop */}
             <FavoriteButton productId={product.id} initialIsFavorite={isFavorite} />
@@ -108,24 +107,23 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           )}
 
           {/* Size Selector */}
-          {product.metadata?.sizes && product.metadata.sizes.length > 0 && (
-            <SizeSelector sizes={product.metadata.sizes} />
+          {product.metadata?.available_sizes && product.metadata.available_sizes.length > 0 && (
+            <SizeSelector sizes={product.metadata.available_sizes} />
           )}
 
           {/* Add to Cart */}
           <AddToCartButton
-            productId={product.id}
-            productName={product.title}
-            price={product.metadata?.price || 0}
-            image={mainImage?.imgix_url}
+            product={product}
+            availableSizes={product.metadata?.available_sizes}
+            availableColors={product.metadata?.colors}
           />
 
           {/* Product Details */}
-          {product.metadata?.details && (
+          {product.metadata?.description && (
             <div className="border-t pt-6">
               <h2 className="font-semibold mb-3">Product Details</h2>
               <div className="text-gray-700 space-y-2">
-                {product.metadata.details.split('\n').map((line: string, index: number) => (
+                {product.metadata.description.split('\n').map((line: string, index: number) => (
                   <p key={index}>{line}</p>
                 ))}
               </div>
