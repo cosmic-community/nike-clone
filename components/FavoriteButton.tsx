@@ -1,26 +1,20 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { Heart } from 'lucide-react'
 
 interface FavoriteButtonProps {
   productId: string
-  initialIsFavorited: boolean
-  isAuthenticated: boolean
+  initialIsFavorite: boolean
 }
 
-export default function FavoriteButton({ productId, initialIsFavorited, isAuthenticated }: FavoriteButtonProps) {
+export default function FavoriteButton({ productId, initialIsFavorite }: FavoriteButtonProps) {
   const router = useRouter()
-  const [isFavorited, setIsFavorited] = useState(initialIsFavorited)
+  const [isFavorite, setIsFavorite] = useState(initialIsFavorite)
   const [isLoading, setIsLoading] = useState(false)
 
   const handleToggleFavorite = async () => {
-    if (!isAuthenticated) {
-      // Redirect to login if not authenticated
-      router.push('/login?redirect=/products')
-      return
-    }
-
     setIsLoading(true)
 
     try {
@@ -30,16 +24,21 @@ export default function FavoriteButton({ productId, initialIsFavorited, isAuthen
         body: JSON.stringify({ productId }),
       })
 
-      if (response.ok) {
-        const data = await response.json()
-        setIsFavorited(data.isFavorited)
-        router.refresh()
-      } else {
-        alert('Failed to update favorites')
+      const data = await response.json()
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          // User not logged in, redirect to login
+          router.push('/login')
+          return
+        }
+        throw new Error(data.error || 'Failed to update favorites')
       }
+
+      setIsFavorite(data.isFavorite)
+      router.refresh()
     } catch (error) {
-      console.error('Favorite toggle error:', error)
-      alert('Failed to update favorites')
+      console.error('Error toggling favorite:', error)
     } finally {
       setIsLoading(false)
     }
@@ -49,26 +48,17 @@ export default function FavoriteButton({ productId, initialIsFavorited, isAuthen
     <button
       onClick={handleToggleFavorite}
       disabled={isLoading}
-      className={`p-2 rounded-full transition-colors ${
-        isFavorited 
-          ? 'bg-red-50 text-red-600 hover:bg-red-100' 
-          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-      } disabled:opacity-50`}
-      aria-label={isFavorited ? 'Remove from favorites' : 'Add to favorites'}
+      className="flex items-center gap-2 px-6 py-3 border border-gray-300 rounded-full hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
     >
-      <svg 
-        className="w-6 h-6" 
-        fill={isFavorited ? 'currentColor' : 'none'} 
-        stroke="currentColor" 
-        viewBox="0 0 24 24"
-      >
-        <path 
-          strokeLinecap="round" 
-          strokeLinejoin="round" 
-          strokeWidth={2} 
-          d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" 
-        />
-      </svg>
+      <Heart
+        className={`w-5 h-5 transition-colors ${
+          isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-600'
+        }`}
+      />
+      <span className="font-medium">
+        {isFavorite ? 'Saved' : 'Save to Favorites'}
+      </span>
     </button>
   )
 }
