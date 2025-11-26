@@ -20,12 +20,22 @@ export default function ProductGallery({ images, productName }: ProductGalleryPr
     )
   }
 
+  // Changed: Added validation to ensure selectedImage index is valid
+  const currentImage = images[selectedImage]
+  if (!currentImage) {
+    return (
+      <div className="aspect-square bg-gray-100 flex items-center justify-center">
+        <p className="text-gray-400">Image not available</p>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-4">
       {/* Main Image */}
       <div className="aspect-square overflow-hidden bg-gray-100">
         <img
-          src={`${images[selectedImage].imgix_url}?w=1200&h=1200&fit=crop&auto=format,compress`}
+          src={`${currentImage.imgix_url}?w=1200&h=1200&fit=crop&auto=format,compress`}
           alt={`${productName} - Image ${selectedImage + 1}`}
           className="w-full h-full object-cover"
           width={600}
