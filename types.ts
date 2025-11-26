@@ -71,13 +71,17 @@ export interface User extends CosmicObject {
 export interface Order extends CosmicObject {
   type: 'orders';
   metadata: {
-    user: User;
-    order_number: string;
-    items: OrderItem[];
-    total_amount: number;
-    status: string;
+    customer_email: string;
+    customer_name: string;
     shipping_address: string;
-    created_at?: string;
+    items: OrderItem[];
+    subtotal: number;
+    shipping: number;
+    tax: number;
+    total: number;
+    status: string;
+    stripe_payment_intent_id: string;
+    stripe_session_id?: string;
   };
 }
 
@@ -95,4 +99,20 @@ export interface AuthUser {
   id: string;
   name: string;
   email: string;
+}
+
+// Shopping cart types
+export interface CartItem {
+  product: Product;
+  quantity: number;
+  size?: string;
+  color?: string;
+}
+
+export interface Cart {
+  items: CartItem[];
+  subtotal: number;
+  shipping: number;
+  tax: number;
+  total: number;
 }

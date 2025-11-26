@@ -87,6 +87,21 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
   }
 }
 
+export async function getProductById(id: string): Promise<Product | null> {
+  try {
+    const response = await cosmic.objects
+      .findOne({ type: 'products', id })
+      .props(['id', 'title', 'slug', 'metadata'])
+      .depth(1)
+    return response.object as Product
+  } catch (error) {
+    if (hasStatus(error) && error.status === 404) {
+      return null
+    }
+    throw new Error('Failed to fetch product')
+  }
+}
+
 export async function getCategories(): Promise<Category[]> {
   try {
     const response = await cosmic.objects
@@ -192,30 +207,35 @@ export async function updateUser(id: string, updates: { name?: string; email?: s
 }
 
 // Order functions
-export async function createOrder(userId: string, orderData: {
-  order_number: string;
-  items: any[];
-  total_amount: number;
-  status: string;
+export async function createOrder(orderData: {
+  customer_email: string;
+  customer_name: string;
   shipping_address: string;
+  items: any[];
+  subtotal: number;
+  shipping: number;
+  tax: number;
+  total: number;
+  status: string;
+  stripe_payment_intent_id: string;
+  stripe_session_id?: string;
 }): Promise<Order> {
+  const orderNumber = `ORD-${Date.now()}`
   const response = await cosmic.objects.insertOne({
-    title: `Order ${orderData.order_number}`,
+    title: `Order ${orderNumber}`,
     type: 'orders',
     metadata: {
-      user: userId,
       ...orderData,
-      created_at: new Date().toISOString(),
     }
   })
   
   return response.object as Order
 }
 
-export async function getOrdersByUser(userId: string): Promise<Order[]> {
+export async function getOrdersByUserEmail(email: string): Promise<Order[]> {
   try {
     const response = await cosmic.objects
-      .find({ type: 'orders', 'metadata.user': userId })
+      .find({ type: 'orders', 'metadata.customer_email': email })
       .props(['id', 'title', 'slug', 'metadata'])
       .depth(1)
     
