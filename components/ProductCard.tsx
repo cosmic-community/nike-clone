@@ -21,7 +21,7 @@ export default function ProductCard({ product, showSaleBadge = false }: ProductC
           height={400}
         />
         {metadata.new_arrival && (
-          <span className="absolute top-3 left-3 bg-nike-orange text-white text-xs font-bold uppercase px-3 py-1 rounded-full">
+          <span className="absolute top-3 left-3 bg-green-600 text-white text-xs font-bold uppercase px-3 py-1 rounded-full">
             New
           </span>
         )}
