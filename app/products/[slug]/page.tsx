@@ -1,164 +1,130 @@
 // app/products/[slug]/page.tsx
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { getProductBySlug } from '@/lib/cosmic'
-import { getSession } from '@/lib/auth'
+import { cosmic } from '@/lib/cosmic'
 import ProductGallery from '@/components/ProductGallery'
 import AddToCartButton from '@/components/AddToCartButton'
+import ColorSelector from '@/components/ColorSelector'
+import SizeSelector from '@/components/SizeSelector'
+import { generateProductJsonLd } from '@/lib/seo'
 import FavoriteButton from '@/components/FavoriteButton'
-import { generateProductSEO } from '@/lib/seo'
+import type { Product, ImageFile } from '@/types'
 
-interface ProductPageProps {
-  params: Promise<{
-    slug: string
-  }>
-}
-
-export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params
-  const product = await getProductBySlug(slug)
   
-  if (!product) {
+  try {
+    const response = await cosmic.objects.findOne({
+      type: 'products',
+      slug: slug,
+    }).props(['title', 'metadata'])
+
+    const product = response.object as Product
+
     return {
-      title: 'Product Not Found | Nike Clone'
+      title: `${product.title} | Nike Clone`,
+      description: product.metadata?.description || `Shop ${product.title} at Nike Clone`,
+      openGraph: {
+        title: product.title,
+        description: product.metadata?.description,
+        images: product.metadata?.images?.[0]?.imgix_url ? [
+          {
+            url: `${product.metadata.images[0].imgix_url}?w=1200&h=630&fit=crop&auto=format,compress`,
+            width: 1200,
+            height: 630,
+          },
+        ] : [],
+      },
+    }
+  } catch (error) {
+    return {
+      title: 'Product Not Found | Nike Clone',
     }
   }
-
-  return generateProductSEO(product)
 }
 
-export default async function ProductPage({ params }: ProductPageProps) {
+export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
-  const product = await getProductBySlug(slug)
-  const user = await getSession()
 
-  if (!product) {
+  let product: Product
+
+  try {
+    const response = await cosmic.objects.findOne({
+      type: 'products',
+      slug: slug,
+    }).props(['id', 'title', 'slug', 'metadata']).depth(1)
+
+    product = response.object as Product
+  } catch (error) {
     notFound()
   }
 
-  // Check if product is in user's favorites
-  const isFavorite = user?.favorite_products?.includes(product.id) || false
-
-  const hasDiscount = product.metadata.sale_price && product.metadata.sale_price < product.metadata.price
-  const discountPercentage = hasDiscount
-    ? Math.round(((product.metadata.price - (product.metadata.sale_price || 0)) / product.metadata.price) * 100)
-    : 0
-
-  // Changed: Combine main_image and gallery into a single images array for ProductGallery
-  const galleryImages = [
-    product.metadata.main_image,
-    ...(product.metadata.gallery || [])
-  ]
+  const mainImage = product.metadata?.images?.[0]
+  const gallery = product.metadata?.images
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+    <div className="container mx-auto px-4 py-8">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(generateProductJsonLd(product)),
+        }}
+      />
+      
+      <div className="grid md:grid-cols-2 gap-8">
         {/* Product Gallery */}
         <ProductGallery
-          images={galleryImages}
-          productName={product.metadata.name}
+          images={gallery}
+          productName={product.title}
         />
 
-        {/* Product Info */}
+        {/* Product Details */}
         <div className="space-y-6">
-          {/* Category */}
-          {product.metadata.category && (
-            <p className="text-sm text-gray-600 uppercase tracking-wide">
-              {product.metadata.category.metadata?.name || product.metadata.category.title}
-            </p>
-          )}
-
-          {/* Title and Subtitle */}
-          <div>
-            <h1 className="text-4xl font-bold mb-2">{product.metadata.name}</h1>
-            {product.metadata.subtitle && (
-              <p className="text-xl text-gray-600">{product.metadata.subtitle}</p>
-            )}
-          </div>
-
-          {/* Price */}
-          <div className="flex items-baseline gap-3">
-            {hasDiscount ? (
-              <>
-                <span className="text-3xl font-bold">
-                  ${product.metadata.sale_price?.toFixed(2)}
-                </span>
-                <span className="text-xl text-gray-500 line-through">
-                  ${product.metadata.price.toFixed(2)}
-                </span>
-                <span className="text-sm font-medium text-red-600 bg-red-50 px-2 py-1 rounded">
-                  {discountPercentage}% OFF
-                </span>
-              </>
-            ) : (
-              <span className="text-3xl font-bold">
-                ${product.metadata.price.toFixed(2)}
-              </span>
-            )}
-          </div>
-
-          {/* Description */}
-          {product.metadata.description && (
-            <div className="prose max-w-none">
-              <p className="text-gray-700">{product.metadata.description}</p>
-            </div>
-          )}
-
-          {/* Colors */}
-          {product.metadata.colors && product.metadata.colors.length > 0 && (
+          <div className="flex items-start justify-between">
             <div>
-              <h3 className="text-sm font-medium mb-3">Available Colors</h3>
-              <div className="flex gap-2">
-                {product.metadata.colors.map((color) => (
-                  <div
-                    key={color}
-                    className="w-8 h-8 rounded-full border-2 border-gray-300"
-                    style={{ backgroundColor: color }}
-                    title={color}
-                  />
+              <h1 className="text-3xl font-bold mb-2">{product.title}</h1>
+              <p className="text-gray-600">{product.metadata?.category}</p>
+            </div>
+            <FavoriteButton productId={product.id} />
+          </div>
+
+          <div className="text-2xl font-semibold">
+            ${product.metadata?.price}
+          </div>
+
+          {product.metadata?.description && (
+            <p className="text-gray-700">{product.metadata.description}</p>
+          )}
+
+          {/* Color Selector */}
+          {product.metadata?.colors && product.metadata.colors.length > 0 && (
+            <ColorSelector colors={product.metadata.colors} />
+          )}
+
+          {/* Size Selector */}
+          {product.metadata?.sizes && product.metadata.sizes.length > 0 && (
+            <SizeSelector sizes={product.metadata.sizes} />
+          )}
+
+          {/* Add to Cart */}
+          <AddToCartButton
+            productId={product.id}
+            productName={product.title}
+            price={product.metadata?.price || 0}
+            image={mainImage?.imgix_url}
+          />
+
+          {/* Product Details */}
+          {product.metadata?.details && (
+            <div className="border-t pt-6">
+              <h2 className="font-semibold mb-3">Product Details</h2>
+              <div className="text-gray-700 space-y-2">
+                {product.metadata.details.split('\n').map((line: string, index: number) => (
+                  <p key={index}>{line}</p>
                 ))}
               </div>
             </div>
           )}
-
-          {/* Sizes */}
-          {product.metadata.available_sizes && product.metadata.available_sizes.length > 0 && (
-            <div>
-              <h3 className="text-sm font-medium mb-3">Select Size</h3>
-              <div className="grid grid-cols-4 gap-2">
-                {product.metadata.available_sizes.map((size) => (
-                  <button
-                    key={size}
-                    className="border border-gray-300 rounded-md py-3 text-center hover:border-black transition-colors"
-                  >
-                    {size}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Action Buttons */}
-          <div className="space-y-3">
-            <AddToCartButton product={product} />
-            <FavoriteButton productId={product.id} initialIsFavorite={isFavorite} />
-          </div>
-
-          {/* Product Features */}
-          <div className="border-t pt-6 space-y-4">
-            <div>
-              <h3 className="font-medium mb-2">Free Delivery</h3>
-              <p className="text-sm text-gray-600">
-                Applies to orders of $150 or more
-              </p>
-            </div>
-            <div>
-              <h3 className="font-medium mb-2">Free Returns</h3>
-              <p className="text-sm text-gray-600">
-                30-day return policy on all orders
-              </p>
-            </div>
-          </div>
         </div>
       </div>
     </div>
