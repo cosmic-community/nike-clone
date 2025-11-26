@@ -1,7 +1,7 @@
 import { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { getSession } from '@/lib/auth'
-import { getOrdersByUser } from '@/lib/cosmic'
+import { getOrdersByUserEmail } from '@/lib/cosmic'
 import ProfileHeader from '@/components/ProfileHeader'
 import OrdersList from '@/components/OrdersList'
 import { generateSEO } from '@/lib/seo'
@@ -19,7 +19,7 @@ export default async function ProfilePage() {
     redirect('/login')
   }
   
-  const orders = await getOrdersByUser(user.id)
+  const orders = await getOrdersByUserEmail(user.email)
   
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">

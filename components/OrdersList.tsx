@@ -30,9 +30,9 @@ export default function OrdersList({ orders }: OrdersListProps) {
         <div key={order.id} className="bg-white rounded-lg shadow-md p-6">
           <div className="flex items-start justify-between mb-4">
             <div>
-              <h3 className="font-semibold text-lg mb-1">Order #{order.metadata.order_number}</h3>
+              <h3 className="font-semibold text-lg mb-1">Order #{order.title.replace('Order ', '')}</h3>
               <p className="text-sm text-gray-600">
-                {new Date(order.metadata.created_at || order.created_at).toLocaleDateString('en-US', {
+                {new Date(order.created_at).toLocaleDateString('en-US', {
                   year: 'numeric',
                   month: 'long',
                   day: 'numeric'
@@ -48,7 +48,7 @@ export default function OrdersList({ orders }: OrdersListProps) {
               }`}>
                 {order.metadata.status}
               </span>
-              <p className="text-lg font-bold mt-2">${order.metadata.total_amount.toFixed(2)}</p>
+              <p className="text-lg font-bold mt-2">${order.metadata.total.toFixed(2)}</p>
             </div>
           </div>
           
