@@ -4,7 +4,9 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import ProductGallery from '@/components/ProductGallery'
 import AddToCartButton from '@/components/AddToCartButton'
+import FavoriteButton from '@/components/FavoriteButton'
 import { getProductBySlug, getProducts } from '@/lib/cosmic'
+import { getSession } from '@/lib/auth'
 import { generateSEO, generateProductJsonLd, generateBreadcrumbJsonLd } from '@/lib/seo'
 
 export async function generateStaticParams() {
@@ -66,6 +68,10 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
     notFound()
   }
 
+  // Changed: Get user session and check if product is favorited
+  const user = await getSession()
+  const isFavorited = user?.favorite_products?.includes(product.id) || false
+
   const { metadata } = product
   const images = [metadata.main_image, ...(metadata.gallery || [])]
   const hasDiscount = metadata.sale_price && metadata.sale_price < metadata.price
@@ -105,7 +111,15 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             </span>
           )}
           
-          <h1 className="text-3xl font-bold mb-2">{metadata.name}</h1>
+          <div className="flex items-start justify-between mb-2">
+            <h1 className="text-3xl font-bold flex-1">{metadata.name}</h1>
+            {/* Changed: Added favorite button */}
+            <FavoriteButton 
+              productId={product.id} 
+              initialIsFavorited={isFavorited}
+              isAuthenticated={!!user}
+            />
+          </div>
           
           {metadata.subtitle && (
             <p className="text-nike-gray text-lg mb-4">{metadata.subtitle}</p>

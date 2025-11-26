@@ -65,6 +65,7 @@ export interface User extends CosmicObject {
     email: string;
     password_hash: string;
     created_at?: string;
+    favorite_products?: string[]; // Changed: Added favorite products array
   };
 }
 
@@ -99,6 +100,7 @@ export interface AuthUser {
   id: string;
   name: string;
   email: string;
+  favorite_products?: string[]; // Changed: Added favorite products array
 }
 
 // Shopping cart types

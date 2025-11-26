@@ -191,6 +191,7 @@ export async function createUser(name: string, email: string, passwordHash: stri
       email,
       password_hash: passwordHash,
       created_at: new Date().toISOString(),
+      favorite_products: [], // Changed: Initialize empty favorites array
     }
   })
   
@@ -204,6 +205,63 @@ export async function updateUser(id: string, updates: { name?: string; email?: s
   })
   
   return response.object as User
+}
+
+// Changed: Added favorites functions
+export async function addFavoriteProduct(userId: string, productId: string): Promise<User> {
+  const user = await getUserById(userId)
+  if (!user) {
+    throw new Error('User not found')
+  }
+  
+  const currentFavorites = user.metadata.favorite_products || []
+  
+  // Add product if not already in favorites
+  if (!currentFavorites.includes(productId)) {
+    const response = await cosmic.objects.updateOne(userId, {
+      metadata: {
+        favorite_products: [...currentFavorites, productId]
+      }
+    })
+    return response.object as User
+  }
+  
+  return user
+}
+
+export async function removeFavoriteProduct(userId: string, productId: string): Promise<User> {
+  const user = await getUserById(userId)
+  if (!user) {
+    throw new Error('User not found')
+  }
+  
+  const currentFavorites = user.metadata.favorite_products || []
+  
+  const response = await cosmic.objects.updateOne(userId, {
+    metadata: {
+      favorite_products: currentFavorites.filter(id => id !== productId)
+    }
+  })
+  
+  return response.object as User
+}
+
+export async function getUserFavoriteProducts(userId: string): Promise<Product[]> {
+  const user = await getUserById(userId)
+  if (!user || !user.metadata.favorite_products || user.metadata.favorite_products.length === 0) {
+    return []
+  }
+  
+  // Fetch all favorite products
+  const favoriteProducts: Product[] = []
+  for (const productId of user.metadata.favorite_products) {
+    const product = await getProductById(productId)
+    if (product) {
+      favoriteProducts.push(product)
+    }
+  }
+  
+  return favoriteProducts
 }
 
 // Order functions

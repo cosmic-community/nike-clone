@@ -57,6 +57,7 @@ export async function getSession(): Promise<AuthUser | null> {
       id: user.id,
       name: user.metadata.name,
       email: user.metadata.email,
+      favorite_products: user.metadata.favorite_products || [], // Changed: Added favorites to session
     }
   } catch (error) {
     return null
