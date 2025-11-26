@@ -27,6 +27,7 @@ export default function Footer() {
           <div>
             <h4 className="font-bold uppercase text-sm mb-4">About Nike</h4>
             <ul className="space-y-2 text-nike-gray text-sm">
+              <li><Link href="/about" className="hover:text-white transition-colors">About Us</Link></li>
               <li><Link href="/products" className="hover:text-white transition-colors">News</Link></li>
               <li><Link href="/products" className="hover:text-white transition-colors">Careers</Link></li>
               <li><Link href="/products" className="hover:text-white transition-colors">Investors</Link></li>
@@ -68,6 +69,21 @@ export default function Footer() {
         <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-4 text-nike-gray text-sm">
             <span>© {new Date().getFullYear()} Nike Clone. All Rights Reserved.</span>
+            <span className="hidden sm:inline">•</span>
+            <a 
+              href="https://www.cosmicjs.com" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="hover:text-white transition-colors inline-flex items-center gap-1.5"
+            >
+              Powered by
+              <img 
+                src="https://cdn.cosmicjs.com/b67de7d0-c810-11ed-b01d-23d7b265c299-logo508x500.svg" 
+                alt="Cosmic CMS" 
+                className="w-4 h-4 inline-block"
+              />
+              Cosmic CMS
+            </a>
           </div>
           <div className="flex items-center gap-4 text-nike-gray text-sm">
             <Link href="/products" className="hover:text-white transition-colors">Guides</Link>
