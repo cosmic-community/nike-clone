@@ -60,11 +60,12 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
     notFound()
   }
 
-  // Changed: Get current user session to check if product is favorited
+  // Get current user session to check if product is favorited
   const user = await getSession()
   const isFavorite = user?.favorite_products?.includes(product.id) || false
 
-  const gallery = product.metadata?.gallery
+  // Get gallery images (using gallery, not images)
+  const gallery = product.metadata?.gallery || []
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -87,9 +88,15 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           <div className="flex items-start justify-between">
             <div>
               <h1 className="text-3xl font-bold mb-2">{product.title}</h1>
-              <p className="text-gray-600">{product.metadata?.category?.title || product.metadata?.category?.metadata?.name}</p>
+              {product.metadata?.category && (
+                <p className="text-gray-600">
+                  {typeof product.metadata.category === 'object' && 'title' in product.metadata.category 
+                    ? product.metadata.category.title 
+                    : ''}
+                </p>
+              )}
             </div>
-            {/* Changed: Pass initialIsFavorite prop */}
+            {/* Pass initialIsFavorite prop */}
             <FavoriteButton productId={product.id} initialIsFavorite={isFavorite} />
           </div>
 

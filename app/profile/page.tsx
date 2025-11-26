@@ -21,13 +21,13 @@ export default async function ProfilePage() {
   }
   
   const orders = await getOrdersByUserEmail(user.email)
-  const favoriteProducts = await getUserFavoriteProducts(user.id) // Changed: Fetch favorite products
+  const favoriteProducts = await getUserFavoriteProducts(user.id)
   
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <ProfileHeader user={user} />
       
-      {/* Changed: Added favorites section */}
+      {/* Favorites Section */}
       {favoriteProducts.length > 0 && (
         <div className="mt-12">
           <h2 className="text-2xl font-bold mb-6">Your Favorites ({favoriteProducts.length})</h2>
