@@ -116,3 +116,21 @@ export interface Cart {
   tax: number;
   total: number;
 }
+
+// About page type
+export interface AboutPage extends CosmicObject {
+  type: 'about-page';
+  metadata: {
+    title: string;
+    description?: string;
+    mission_title?: string;
+    mission_content?: string;
+    values?: AboutValue[];
+    hero_image?: ImageFile;
+  };
+}
+
+export interface AboutValue {
+  title: string;
+  description: string;
+}
