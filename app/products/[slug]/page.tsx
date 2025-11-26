@@ -44,13 +44,18 @@ export default async function ProductPage({ params }: ProductPageProps) {
     ? Math.round(((product.metadata.price - (product.metadata.sale_price || 0)) / product.metadata.price) * 100)
     : 0
 
+  // Changed: Combine main_image and gallery into a single images array for ProductGallery
+  const galleryImages = [
+    product.metadata.main_image,
+    ...(product.metadata.gallery || [])
+  ]
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
         {/* Product Gallery */}
         <ProductGallery
-          mainImage={product.metadata.main_image}
-          gallery={product.metadata.gallery}
+          images={galleryImages}
           productName={product.metadata.name}
         />
 

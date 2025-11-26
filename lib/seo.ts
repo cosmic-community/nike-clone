@@ -60,6 +60,22 @@ export function generateSEO({
   }
 }
 
+// Changed: Added generateProductSEO function to fix TypeScript error
+export function generateProductSEO(product: Product): Metadata {
+  const hasDiscount = product.metadata.sale_price && product.metadata.sale_price < product.metadata.price
+  const price = hasDiscount ? product.metadata.sale_price : product.metadata.price
+  const description = product.metadata.description || product.metadata.subtitle || `${product.metadata.name} - Premium Nike product`
+  
+  return generateSEO({
+    title: `${product.metadata.name} | ${siteName}`,
+    description,
+    path: `/products/${product.slug}`,
+    image: product.metadata.main_image.imgix_url,
+    type: 'website',
+    jsonLd: generateProductJsonLd(product),
+  })
+}
+
 export function generateProductJsonLd(product: Product): Record<string, any> {
   const hasDiscount = product.metadata.sale_price && product.metadata.sale_price < product.metadata.price
   
