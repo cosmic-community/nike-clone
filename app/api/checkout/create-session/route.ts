@@ -3,7 +3,7 @@ import Stripe from 'stripe'
 import { getCart, getCartTotal } from '@/lib/cart'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
-  apiVersion: '2024-11-20.acacia',
+  apiVersion: '2025-02-24.acacia',
 })
 
 export async function POST(request: NextRequest) {

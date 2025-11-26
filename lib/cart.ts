@@ -32,8 +32,11 @@ export async function addToCart(product: Product, quantity: number = 1, size?: s
   )
   
   if (existingItemIndex > -1) {
-    // Update quantity
-    cart[existingItemIndex].quantity += quantity
+    // Update quantity - validate index exists
+    const existingItem = cart[existingItemIndex]
+    if (existingItem) {
+      existingItem.quantity += quantity
+    }
   } else {
     // Add new item
     cart.push({
@@ -67,8 +70,11 @@ export async function updateCartItemQuantity(productId: string, size: string | u
       // Remove item
       cart.splice(itemIndex, 1)
     } else {
-      // Update quantity
-      cart[itemIndex].quantity = quantity
+      // Update quantity - validate index exists
+      const item = cart[itemIndex]
+      if (item) {
+        item.quantity = quantity
+      }
     }
     
     cookieStore.set(CART_COOKIE_NAME, JSON.stringify(cart), {
