@@ -3,9 +3,10 @@ import { Product } from '@/types'
 
 interface ProductCardProps {
   product: Product
+  showSaleBadge?: boolean
 }
 
-export default function ProductCard({ product }: ProductCardProps) {
+export default function ProductCard({ product, showSaleBadge = false }: ProductCardProps) {
   const { metadata } = product
   const hasDiscount = metadata.sale_price && metadata.sale_price < metadata.price
 
@@ -24,7 +25,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             New
           </span>
         )}
-        {hasDiscount && (
+        {(showSaleBadge || hasDiscount) && (
           <span className="absolute top-3 right-3 bg-red-600 text-white text-xs font-bold uppercase px-3 py-1 rounded-full">
             Sale
           </span>
