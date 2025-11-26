@@ -2,13 +2,14 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { cosmic } from '@/lib/cosmic'
+import { getSession } from '@/lib/auth'
 import ProductGallery from '@/components/ProductGallery'
 import AddToCartButton from '@/components/AddToCartButton'
 import ColorSelector from '@/components/ColorSelector'
 import SizeSelector from '@/components/SizeSelector'
 import { generateProductJsonLd } from '@/lib/seo'
 import FavoriteButton from '@/components/FavoriteButton'
-import type { Product, ImageFile } from '@/types'
+import type { Product } from '@/types'
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params
@@ -59,6 +60,10 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
     notFound()
   }
 
+  // Changed: Get current user session to check if product is favorited
+  const user = await getSession()
+  const isFavorite = user?.favorite_products?.includes(product.id) || false
+
   const mainImage = product.metadata?.images?.[0]
   const gallery = product.metadata?.images
 
@@ -85,7 +90,8 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
               <h1 className="text-3xl font-bold mb-2">{product.title}</h1>
               <p className="text-gray-600">{product.metadata?.category}</p>
             </div>
-            <FavoriteButton productId={product.id} />
+            {/* Changed: Pass initialIsFavorite prop */}
+            <FavoriteButton productId={product.id} initialIsFavorite={isFavorite} />
           </div>
 
           <div className="text-2xl font-semibold">
