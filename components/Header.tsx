@@ -12,7 +12,7 @@ export default async function Header() {
       <div className="bg-nike-lightgray">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex justify-between items-center text-xs">
           <div className="flex items-center gap-4">
-            <span className="font-bold">Just Do It</span>
+            <span className="font-bold">Winning Isn't Comfortable</span>
           </div>
           <div className="flex items-center gap-4">
             <Link href="/products" className="hover:text-nike-gray">Find a Store</Link>
