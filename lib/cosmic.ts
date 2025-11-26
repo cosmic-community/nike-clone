@@ -1,5 +1,5 @@
 import { createBucketClient } from '@cosmicjs/sdk'
-import { FeaturedBanner, Product, Category, Order, OrderItem } from '@/types'
+import { FeaturedBanner, Product, Category, User, Order, OrderItem } from '@/types'
 
 export const cosmic = createBucketClient({
   bucketSlug: process.env.COSMIC_BUCKET_SLUG as string,
@@ -132,7 +132,66 @@ export async function getProductsByCategory(categoryId: string): Promise<Product
   }
 }
 
-// Order functions
+// Authentication functions
+export async function getUserByEmail(email: string): Promise<User | null> {
+  try {
+    const response = await cosmic.objects
+      .find({ type: 'users', 'metadata.email': email })
+      .props(['id', 'title', 'slug', 'metadata'])
+      .depth(1)
+    
+    if (response.objects && response.objects.length > 0) {
+      return response.objects[0] as User
+    }
+    return null
+  } catch (error) {
+    if (hasStatus(error) && error.status === 404) {
+      return null
+    }
+    throw new Error('Failed to fetch user')
+  }
+}
+
+export async function getUserById(id: string): Promise<User | null> {
+  try {
+    const response = await cosmic.objects
+      .findOne({ type: 'users', id })
+      .props(['id', 'title', 'slug', 'metadata'])
+      .depth(1)
+    return response.object as User
+  } catch (error) {
+    if (hasStatus(error) && error.status === 404) {
+      return null
+    }
+    throw new Error('Failed to fetch user')
+  }
+}
+
+export async function createUser(name: string, email: string, passwordHash: string): Promise<User> {
+  const response = await cosmic.objects.insertOne({
+    title: name,
+    type: 'users',
+    metadata: {
+      name,
+      email,
+      password_hash: passwordHash,
+      created_at: new Date().toISOString(),
+    }
+  })
+  
+  return response.object as User
+}
+
+export async function updateUser(id: string, updates: { name?: string; email?: string }): Promise<User> {
+  const response = await cosmic.objects.updateOne(id, {
+    title: updates.name,
+    metadata: updates
+  })
+  
+  return response.object as User
+}
+
+// Order functions - Stripe-based e-commerce
 export async function createOrder(orderData: {
   customerEmail: string;
   customerName: string;
@@ -144,6 +203,7 @@ export async function createOrder(orderData: {
   total: number;
   stripePaymentIntentId: string;
   stripeSessionId?: string;
+  userId?: string;
 }): Promise<Order> {
   const response = await cosmic.objects.insertOne({
     title: `Order - ${orderData.customerEmail} - ${new Date().toISOString()}`,
@@ -160,6 +220,7 @@ export async function createOrder(orderData: {
       status: 'Pending',
       stripe_payment_intent_id: orderData.stripePaymentIntentId,
       stripe_session_id: orderData.stripeSessionId || '',
+      user: orderData.userId || '',
     },
   })
   return response.object as Order
@@ -169,6 +230,37 @@ export async function getOrderBySessionId(sessionId: string): Promise<Order | nu
   try {
     const response = await cosmic.objects
       .findOne({ type: 'orders', 'metadata.stripe_session_id': sessionId })
+      .props(['id', 'title', 'slug', 'metadata'])
+      .depth(1)
+    return response.object as Order
+  } catch (error) {
+    if (hasStatus(error) && error.status === 404) {
+      return null
+    }
+    throw new Error('Failed to fetch order')
+  }
+}
+
+export async function getOrdersByUser(userId: string): Promise<Order[]> {
+  try {
+    const response = await cosmic.objects
+      .find({ type: 'orders', 'metadata.user': userId })
+      .props(['id', 'title', 'slug', 'metadata'])
+      .depth(1)
+    
+    return response.objects as Order[]
+  } catch (error) {
+    if (hasStatus(error) && error.status === 404) {
+      return []
+    }
+    throw new Error('Failed to fetch orders')
+  }
+}
+
+export async function getOrderById(id: string): Promise<Order | null> {
+  try {
+    const response = await cosmic.objects
+      .findOne({ type: 'orders', id })
       .props(['id', 'title', 'slug', 'metadata'])
       .depth(1)
     return response.object as Order

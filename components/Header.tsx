@@ -1,138 +1,109 @@
-'use client'
-
 import Link from 'next/link'
-import { useState } from 'react'
+import { getCategories } from '@/lib/cosmic'
+import { getSession } from '@/lib/auth'
 import SearchBar from './SearchBar'
 import CartIcon from './CartIcon'
 import CartSlideOver from './CartSlideOver'
+import MobileMenu from './MobileMenu'
 
-export default function Header() {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+export default async function Header() {
+  const categories = await getCategories()
+  const user = await getSession()
 
   return (
     <>
-      <header className="bg-white sticky top-0 z-30 border-b border-gray-200">
+      <header className="sticky top-0 z-50 bg-white border-b border-gray-200">
         {/* Top bar */}
-        <div className="bg-gray-100 py-2 px-4 text-xs">
-          <div className="max-w-7xl mx-auto flex justify-between items-center">
+        <div className="bg-gray-100">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex justify-between items-center text-xs">
             <div className="flex items-center gap-4">
-              <span className="font-medium">Nike Clone</span>
+              <span className="font-bold">Just Do It</span>
             </div>
             <div className="flex items-center gap-4">
-              <Link href="/products" className="hover:underline">Shop</Link>
+              <Link href="/products" className="hover:text-gray-600">Find a Store</Link>
               <span>|</span>
-              <Link href="/cart" className="hover:underline">Bag</Link>
+              <Link href="/products" className="hover:text-gray-600">Help</Link>
+              <span>|</span>
+              {user ? (
+                <>
+                  <Link href="/profile" className="hover:text-gray-600 font-medium">
+                    {user.name}
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link href="/signup" className="hover:text-gray-600">Join Us</Link>
+                  <span>|</span>
+                  <Link href="/login" className="hover:text-gray-600">Sign In</Link>
+                </>
+              )}
             </div>
           </div>
         </div>
 
         {/* Main header */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <Link href="/" className="flex-shrink-0">
-              <span className="text-2xl font-bold tracking-tight">NIKE</span>
+              <svg className="h-6 w-16" viewBox="0 0 69 32" fill="none">
+                <path 
+                  d="M68.56 4.01C52.37 10.5 36.28 17.11 20.16 23.61C15.16 25.53 10.14 27.41 5.16 29.38C4.33 29.73 3.57 29.8 2.94 29.43C1.66 28.68 1.86 26.81 2.93 25.4C6.58 20.59 12.88 14.67 20.15 9.92C27.15 5.35 37.06 0.31 47.49 0C50.17 -0.07 52.13 0.39 53.36 1.03C55.24 2.02 54.22 3.72 51.88 4.42C45.05 6.47 36.34 7.51 27.78 10.44C26.16 10.99 24.4 11.75 23.47 12.84C22.7 13.74 22.99 14.45 24.07 14.47C25.58 14.5 27.85 13.74 29.63 13.19C41.57 9.49 55.12 5.76 68.56 4.01Z" 
+                  fill="currentColor"
+                />
+              </svg>
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center gap-8">
+            <div className="hidden md:flex items-center gap-8">
               <Link href="/products?filter=new" className="font-medium hover:text-gray-600 transition-colors">
                 New & Featured
               </Link>
+              {categories.map((category) => (
+                <Link 
+                  key={category.id}
+                  href={`/categories/${category.slug}`} 
+                  className="font-medium hover:text-gray-600 transition-colors"
+                >
+                  {category.metadata.name}
+                </Link>
+              ))}
               <Link href="/products" className="font-medium hover:text-gray-600 transition-colors">
-                Shop All
+                Sale
               </Link>
-              <Link href="/categories/running" className="font-medium hover:text-gray-600 transition-colors">
-                Running
-              </Link>
-              <Link href="/categories/basketball" className="font-medium hover:text-gray-600 transition-colors">
-                Basketball
-              </Link>
-              <Link href="/categories/lifestyle" className="font-medium hover:text-gray-600 transition-colors">
-                Lifestyle
-              </Link>
-            </nav>
+            </div>
 
             {/* Right side icons */}
             <div className="flex items-center gap-2">
-              <SearchBar />
-              <CartIcon />
-
-              {/* Mobile menu button */}
-              <button
-                className="md:hidden p-2 hover:bg-gray-100 rounded-full transition-colors"
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                aria-label="Toggle menu"
-              >
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  {isMobileMenuOpen ? (
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  ) : (
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4 6h16M4 12h16M4 18h16"
-                    />
-                  )}
+              <div className="hidden sm:block">
+                <SearchBar />
+              </div>
+              
+              {/* Favorites button */}
+              <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                 </svg>
               </button>
+              
+              {/* Cart icon with slide-over */}
+              <CartIcon />
+
+              {/* Mobile Search Button */}
+              <Link 
+                href="/search" 
+                className="sm:hidden p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </Link>
+
+              {/* Mobile menu */}
+              <MobileMenu categories={categories} />
             </div>
           </div>
-        </div>
-
-        {/* Mobile Navigation */}
-        {isMobileMenuOpen && (
-          <nav className="md:hidden border-t border-gray-200 py-4 px-4">
-            <div className="flex flex-col gap-4">
-              <Link
-                href="/products?filter=new"
-                className="font-medium py-2"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                New & Featured
-              </Link>
-              <Link
-                href="/products"
-                className="font-medium py-2"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Shop All
-              </Link>
-              <Link
-                href="/categories/running"
-                className="font-medium py-2"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Running
-              </Link>
-              <Link
-                href="/categories/basketball"
-                className="font-medium py-2"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Basketball
-              </Link>
-              <Link
-                href="/categories/lifestyle"
-                className="font-medium py-2"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Lifestyle
-              </Link>
-            </div>
-          </nav>
-        )}
+        </nav>
       </header>
 
       <CartSlideOver />

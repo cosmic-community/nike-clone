@@ -57,7 +57,24 @@ export interface Product extends CosmicObject {
   };
 }
 
-// Cart types
+// Authentication types (from base branch)
+export interface User extends CosmicObject {
+  type: 'users';
+  metadata: {
+    name: string;
+    email: string;
+    password_hash: string;
+    created_at?: string;
+  };
+}
+
+export interface AuthUser {
+  id: string;
+  name: string;
+  email: string;
+}
+
+// Cart types (from agent branch)
 export interface CartItem {
   productId: string;
   productSlug: string;
@@ -75,7 +92,7 @@ export interface CartState {
   isOpen: boolean;
 }
 
-// Order types
+// Order types (merged - supports both auth and guest checkout)
 export interface OrderItem {
   productId: string;
   productSlug: string;
@@ -101,5 +118,6 @@ export interface Order extends CosmicObject {
     status: string;
     stripe_payment_intent_id: string;
     stripe_session_id?: string;
+    user?: string; // Optional user ID for authenticated users
   };
 }
