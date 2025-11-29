@@ -9,10 +9,6 @@ export const metadata: Metadata = generateSEO({
   path: '/news',
 })
 
-// Add this to force static generation
-export const dynamic = 'force-static'
-export const revalidate = 3600 // Revalidate every hour
-
 export default async function NewsPage() {
   const [featuredArticles, allArticles] = await Promise.all([
     getFeaturedArticles(),

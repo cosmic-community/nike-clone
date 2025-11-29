@@ -21,3 +21,47 @@
     @apply inline-block bg-white text-nike-black border border-nike-black px-8 py-3 rounded-full font-medium text-sm uppercase tracking-wider transition-all duration-200 hover:bg-nike-black hover:text-white;
   }
 }
+
+/* Enhanced prose styles for article content */
+@layer utilities {
+  .prose {
+    @apply text-nike-black;
+  }
+  
+  .prose p {
+    @apply mb-6 leading-relaxed;
+  }
+  
+  .prose h2 {
+    @apply text-3xl font-bold uppercase tracking-tight mt-12 mb-6;
+  }
+  
+  .prose h3 {
+    @apply text-2xl font-bold uppercase tracking-tight mt-10 mb-4;
+  }
+  
+  .prose ul,
+  .prose ol {
+    @apply my-6 pl-6;
+  }
+  
+  .prose li {
+    @apply mb-2;
+  }
+  
+  .prose a {
+    @apply text-nike-black underline hover:text-nike-gray transition-colors;
+  }
+  
+  .prose strong {
+    @apply font-bold text-nike-black;
+  }
+  
+  .prose blockquote {
+    @apply border-l-4 border-nike-black pl-6 italic text-nike-gray my-8;
+  }
+  
+  .prose img {
+    @apply rounded-lg my-8 w-full;
+  }
+}

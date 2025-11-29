@@ -28,7 +28,7 @@ export default function Footer() {
             <h4 className="font-bold uppercase text-sm mb-4">About Nike</h4>
             <ul className="space-y-2 text-nike-gray text-sm">
               <li><Link href="/about" className="hover:text-white transition-colors">About Us</Link></li>
-              <li><Link href="/products" className="hover:text-white transition-colors">News</Link></li>
+              <li><Link href="/news" className="hover:text-white transition-colors">News</Link></li>
               <li><Link href="/products" className="hover:text-white transition-colors">Careers</Link></li>
             </ul>
           </div>

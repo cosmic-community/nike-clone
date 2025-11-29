@@ -36,10 +36,6 @@ export async function generateStaticParams() {
   }))
 }
 
-// Add this to force static generation
-export const dynamic = 'force-static'
-export const revalidate = 3600 // Revalidate every hour
-
 export default async function ArticlePage({ params }: ArticlePageProps) {
   const { slug } = await params
   const article = await getArticleBySlug(slug)
@@ -111,7 +107,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
         {/* Content */}
         <div 
-          className="prose prose-lg max-w-none"
+          className="prose prose-lg prose-headings:font-bold prose-headings:uppercase prose-headings:tracking-tight prose-h2:text-3xl prose-h2:mt-12 prose-h2:mb-6 prose-h3:text-2xl prose-h3:mt-10 prose-h3:mb-4 prose-p:text-nike-black prose-p:leading-relaxed prose-p:mb-6 prose-a:text-nike-black prose-a:underline hover:prose-a:text-nike-gray prose-strong:font-bold prose-strong:text-nike-black prose-ul:my-6 prose-ul:list-disc prose-ul:pl-6 prose-ol:my-6 prose-ol:list-decimal prose-ol:pl-6 prose-li:mb-2 prose-blockquote:border-l-4 prose-blockquote:border-nike-black prose-blockquote:pl-6 prose-blockquote:italic prose-blockquote:text-nike-gray prose-img:rounded-lg prose-img:my-8 max-w-none"
           dangerouslySetInnerHTML={{ __html: metadata.content }}
         />
 
