@@ -36,6 +36,10 @@ export async function generateStaticParams() {
   }))
 }
 
+// Add this to force static generation
+export const dynamic = 'force-static'
+export const revalidate = 3600 // Revalidate every hour
+
 export default async function ArticlePage({ params }: ArticlePageProps) {
   const { slug } = await params
   const article = await getArticleBySlug(slug)
