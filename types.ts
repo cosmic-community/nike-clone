@@ -57,6 +57,21 @@ export interface Product extends CosmicObject {
   };
 }
 
+// News/Article types
+export interface Article extends CosmicObject {
+  type: 'articles';
+  metadata: {
+    title: string;
+    excerpt?: string;
+    content: string;
+    featured_image: ImageFile;
+    author?: string;
+    published_date: string;
+    category?: string;
+    featured?: boolean;
+  };
+}
+
 // Authentication types
 export interface User extends CosmicObject {
   type: 'users';

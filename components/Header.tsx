@@ -65,6 +65,9 @@ export default async function Header() {
             <Link href="/products" className="font-medium hover:text-nike-gray transition-colors">
               Sale
             </Link>
+            <Link href="/news" className="font-medium hover:text-nike-gray transition-colors">
+              News
+            </Link>
           </div>
 
           <div className="flex items-center gap-4">
