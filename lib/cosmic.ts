@@ -1,5 +1,5 @@
 import { createBucketClient } from '@cosmicjs/sdk'
-import { FeaturedBanner, Product, Category, User, Order, AboutPage } from '@/types'
+import { FeaturedBanner, Product, Category, User, Order, AboutPage, Article } from '@/types'
 
 export const cosmic = createBucketClient({
   bucketSlug: process.env.COSMIC_BUCKET_SLUG as string,
@@ -160,6 +160,65 @@ export async function getAboutPage(): Promise<AboutPage | null> {
       return null
     }
     throw new Error('Failed to fetch about page')
+  }
+}
+
+// News/Articles functions
+export async function getArticles(): Promise<Article[]> {
+  try {
+    const response = await cosmic.objects
+      .find({ type: 'articles' })
+      .props(['id', 'title', 'slug', 'metadata', 'created_at'])
+      .depth(1)
+    
+    // Sort by published_date descending (newest first)
+    const articles = response.objects as Article[]
+    return articles.sort((a, b) => {
+      const dateA = new Date(a.metadata?.published_date || a.created_at).getTime()
+      const dateB = new Date(b.metadata?.published_date || b.created_at).getTime()
+      return dateB - dateA
+    })
+  } catch (error) {
+    if (hasStatus(error) && error.status === 404) {
+      return []
+    }
+    throw new Error('Failed to fetch articles')
+  }
+}
+
+export async function getFeaturedArticles(): Promise<Article[]> {
+  try {
+    const response = await cosmic.objects
+      .find({ type: 'articles', 'metadata.featured': true })
+      .props(['id', 'title', 'slug', 'metadata', 'created_at'])
+      .depth(1)
+    
+    const articles = response.objects as Article[]
+    return articles.sort((a, b) => {
+      const dateA = new Date(a.metadata?.published_date || a.created_at).getTime()
+      const dateB = new Date(b.metadata?.published_date || b.created_at).getTime()
+      return dateB - dateA
+    })
+  } catch (error) {
+    if (hasStatus(error) && error.status === 404) {
+      return []
+    }
+    throw new Error('Failed to fetch featured articles')
+  }
+}
+
+export async function getArticleBySlug(slug: string): Promise<Article | null> {
+  try {
+    const response = await cosmic.objects
+      .findOne({ type: 'articles', slug })
+      .props(['id', 'title', 'slug', 'metadata', 'created_at'])
+      .depth(1)
+    return response.object as Article
+  } catch (error) {
+    if (hasStatus(error) && error.status === 404) {
+      return null
+    }
+    throw new Error('Failed to fetch article')
   }
 }
 
